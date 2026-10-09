@@ -64,7 +64,7 @@ athena-zero-chatbot/
 ├── requirements.txt   Python packages needed
 ├── README.md
 ├── .gitignore
-└── static/
+└── frontend/
     ├── index.html     the page
     ├── style.css      styling
     └── script.js      chat logic in the browser
