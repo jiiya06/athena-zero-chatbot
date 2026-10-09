@@ -149,10 +149,10 @@ function changeBootText(newText) {
 }
 
 // timeline in milliseconds - change these numbers to speed up or slow down
-setTimeout(function () { bootText.classList.add("show"); }, 1600);   // "Lighting the lamp" fades in
-setTimeout(function () { changeBootText("AI can make mistakes. \nPlease double check its responses."); }, 3000);
-setTimeout(function () { changeBootText("Ready"); }, 6200);
-setTimeout(hideBoot, reduceMotion ? 300 : 7800);
+setTimeout(function () { bootText.classList.add("show"); }, 1000);   // "Lighting the lamp" fades in
+setTimeout(function () { changeBootText("AI can make mistakes. \nPlease double check its responses."); },1000);
+setTimeout(function () { changeBootText("Ready"); }, 3200);
+setTimeout(hideBoot, reduceMotion ? 300 : 5800);
 bootScreen.onclick = hideBoot;   // click to skip
 
 

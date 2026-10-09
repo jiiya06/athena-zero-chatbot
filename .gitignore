@@ -1,7 +1,6 @@
-# secrets and local stuff - never upload these to GitHub
-.env
 venv/
 __pycache__/
+.env
 chat.db
-*.bak
-static_old*/
+*.bak*
+.vscode/
