@@ -83,11 +83,39 @@ function escapeHtml(text) {
     .replace(/>/g, "&gt;");
 }
 
+// ---- maths: hide formulas from markdown, then draw them with KaTeX ----
+const MATH_PATTERN = /(```[\s\S]*?```|`[^`\n]*`)|\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)|\$([^\s$](?:[^$\n]*?[^\s$])?)\$/g;
+
+function protectMath(text, saved) {
+  return text.replace(MATH_PATTERN, function (all, code, d1, d2, i1, i2) {
+    if (code) {
+      return all;    // code is left alone
+    }
+    saved.push({ tex: d1 || d2 || i1 || i2, display: Boolean(d1 || d2) });
+    return "@@MATH" + (saved.length - 1) + "@@";
+  });
+}
+
+function restoreMath(html, saved) {
+  return html.replace(/@@MATH(\d+)@@/g, function (all, n) {
+    const item = saved[Number(n)];
+    if (!window.katex) {
+      return "<code>" + escapeHtml(item.tex) + "</code>";
+    }
+    return katex.renderToString(item.tex.trim(), {
+      displayMode: item.display,
+      throwOnError: false,
+    });
+  });
+}
+
 // turn markdown text into safe HTML
 function markdownToHtml(text) {
   if (window.marked && window.DOMPurify) {
-    const html = marked.parse(text, { gfm: true, breaks: true });
-    return DOMPurify.sanitize(html);
+    const saved = [];
+    const safeText = protectMath(text, saved);
+    const html = marked.parse(safeText, { gfm: true, breaks: true });
+    return restoreMath(DOMPurify.sanitize(html), saved);
   }
   // if the libraries did not load (no internet), show plain text
   return "<p>" + escapeHtml(text).replace(/\n/g, "<br>") + "</p>";
@@ -664,7 +692,7 @@ function errorMessage(error, status, data) {
 const thinkingWords = ["Thinking", "Consulting the scrolls", "Writing it down"];
 
 // send the message to the backend and show the reply
-async function askServer(text) {
+async function askServer(text, image) {
   const chatId = activeId;
   setWaiting(true);
 
@@ -692,6 +720,8 @@ async function askServer(text) {
         style: settings.style,
         instructions: settings.instr,
         temperature: settings.temp,
+        mode: modeSelect.value,
+        image: image || "",
       }),
     });
     status = response.status;
@@ -717,7 +747,7 @@ async function askServer(text) {
 
     const retryButton = makeButton("retry-btn", "Send again", "Send again", function () {
       msg.row.remove();
-      askServer(text);
+      askServer(text, image);
     });
 
     msg.body.append(errorText, retryButton);
@@ -737,18 +767,34 @@ function setWaiting(value) {
 }
 
 function sendMessage() {
-  const text = input.value.trim();
+  let text = input.value.trim();
+  if (text === "" && pendingImage) {
+    text = "Please explain this image.";
+  }
   if (waiting || text === "") {
     return;
   }
-  createChatIfNeeded(text);
-  welcome.hidden = true;
-  addMessage("user", text);
+  const shownText = text;                 // what appears in the chat bubble
+  const image = pendingImage;
+  if (pendingFileText) {
+    text = text + "\n\n" + pendingFileText;   // the file goes to the AI, not into the bubble
+  }
 
+  createChatIfNeeded(shownText);
+  welcome.hidden = true;
+  const userMsg = addMessage("user", shownText);
+  if (image) {
+    const picture = document.createElement("img");
+    picture.src = image;
+    picture.className = "sent-image";
+    userMsg.body.appendChild(picture);
+  }
+
+  clearAttachment();
   input.value = "";
   resizeInput();
   showChatList();
-  askServer(text);
+  askServer(text, image);
 }
 
 // make the text box grow as the user types (up to 160px)
@@ -781,3 +827,90 @@ if (activeId && findChat(activeId)) {
   welcome.hidden = false;
 }
 input.focus();
+
+
+// ====================================================
+// 10. ATTACH AN IMAGE / FILE AND STUDY MODES
+// ====================================================
+const modeSelect = document.getElementById("modeSelect");
+const attachBtn = document.getElementById("attachBtn");
+const fileInput = document.getElementById("fileInput");
+const attachChip = document.getElementById("attachChip");
+
+let pendingImage = "";      // the picture, as base64 text
+let pendingFileText = "";   // the text of an attached text/code file
+
+// remember the chosen study mode
+modeSelect.value = loadData("athena.mode", "normal");
+modeSelect.onchange = function () {
+  saveData("athena.mode", modeSelect.value);
+};
+
+// the small "file name  x" label above the message box
+function showAttachment(name) {
+  attachChip.textContent = "";
+  attachChip.classList.toggle("show", name !== "");
+  if (name === "") {
+    return;
+  }
+  const label = document.createElement("span");
+  label.textContent = name;
+  const remove = makeButton("chip-x", "×", "Remove attachment", clearAttachment);
+  attachChip.append(label, remove);
+}
+
+function clearAttachment() {
+  pendingImage = "";
+  pendingFileText = "";
+  showAttachment("");
+}
+
+// make big photos smaller so the request stays small
+function shrinkImage(file) {
+  return new Promise(function (resolve) {
+    const img = new Image();
+    img.onload = function () {
+      const scale = Math.min(1, 1024 / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL("image/jpeg", 0.85));
+    };
+    img.onerror = function () {
+      alert("Could not read that image. Try a PNG or JPG.");
+      resolve("");
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+attachBtn.onclick = function () {
+  fileInput.click();
+};
+
+fileInput.onchange = async function () {
+  const file = fileInput.files[0];
+  fileInput.value = "";
+  if (!file) {
+    return;
+  }
+  clearAttachment();
+
+  if (file.type.startsWith("image/")) {
+    pendingImage = await shrinkImage(file);
+    if (pendingImage === "") {
+      return;
+    }
+  } else if (file.size > 200000) {
+    alert("That file is too big. Text files up to 200 KB work.");
+    return;
+  } else {
+    const content = await file.text();
+    pendingFileText = "[Attached file: " + file.name + "]\n" + content.slice(0, 12000);
+  }
+  showAttachment(file.name);
+};
