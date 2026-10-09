@@ -1,0 +1,7 @@
+# secrets and local stuff - never upload these to GitHub
+.env
+venv/
+__pycache__/
+chat.db
+*.bak
+static_old*/

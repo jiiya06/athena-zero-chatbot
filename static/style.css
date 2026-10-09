@@ -1,0 +1,856 @@
+/* style.css - Athena Zero */
+
+/* ---------- colours ---------- */
+/* dark mode (default) */
+[data-theme="dark"] {
+    --bg: #0E1420;
+    --side: #0A0F19;
+    --panel: #151D2E;
+    --line-color: #25314A;
+    --text: #EEEAE0;
+    --dim: #8F99AE;
+    --accent: #C9A15B;
+    --gold: #C9A15B;
+    --on-accent: #0E1420;
+    --mine: #1B2740;
+    --error: #E88B78;
+  }
+  
+  /* light mode */
+  [data-theme="light"] {
+    --bg: #F5F2EB;
+    --side: #ECE8DE;
+    --panel: #FFFFFF;
+    --line-color: #D9D3C5;
+    --text: #1A2130;
+    --dim: #697080;
+    --accent: #1F4E8C;
+    --gold: #1F4E8C;
+    --on-accent: #FFFFFF;
+    --mine: #E4E9F2;
+    --error: #C4533F;
+  }
+  
+  :root {
+    --heading-font: 'GFS Didot', Georgia, 'Times New Roman', serif;
+    --body-font: 'Hanken Grotesk', 'Segoe UI', system-ui, sans-serif;
+    --header-height: 72px;   /* sidebar logo area and top bar share this so their lines line up */
+  }
+  
+  /* ---------- basic reset ---------- */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+  }
+  
+  html, body {
+    height: 100%;
+  }
+  
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 1rem/1.65 var(--body-font);
+    overflow: hidden;
+  }
+  
+  button, input, textarea {
+    font: inherit;
+    color: inherit;
+  }
+  
+  button {
+    cursor: pointer;
+  }
+  
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+  
+  /* the gold (dark) / gold (light) line under the header - now 3px thick */
+  .line {
+    height: 3px;
+    flex: none;
+    border-radius: 3px;
+    background: var(--gold);
+  }
+  
+  .top-line {
+    margin: 0 28px;
+  }
+  
+  
+  /* ---------- loading screen ---------- */
+  #boot {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: var(--bg);
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 20px;
+    transition: opacity 0.6s, visibility 0.6s;
+  }
+  
+  #boot.done {
+    opacity: 0;
+    visibility: hidden;
+  }
+  
+  .boot-owl {
+    width: 90px;
+    height: 90px;
+    color: var(--accent);
+    opacity: 0;
+    transform: scale(0.8);
+    animation: land 0.8s 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+  
+  .boot-name {
+    font: 2rem var(--heading-font);
+    opacity: 0;
+    animation: fade-in 0.6s 0.9s forwards;
+  }
+  
+  .boot-text {
+    color: var(--dim);
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    max-width: 320px;
+    min-height: 3.3em;     /* room for 2 lines so nothing jumps around */
+    text-align: center;
+  }
+  
+  .boot-text.show {
+    opacity: 1;
+  }
+  
+  @keyframes land {
+    to { opacity: 1; transform: none; }
+  }
+  
+  @keyframes fade-in {
+    to { opacity: 1; }
+  }
+  
+  
+  /* ---------- page layout ---------- */
+  .app {
+    display: grid;
+    grid-template-columns: 272px 1fr;
+    grid-template-rows: minmax(0, 1fr);
+    height: 100%;
+  }
+  
+  
+  /* ---------- sidebar ---------- */
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    background: var(--side);
+    border-right: 1px solid var(--line-color);
+    min-height: 0;
+    overflow: hidden;
+  }
+  
+  .brand {
+    height: var(--header-height);
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 20px;
+    font: 1.25rem var(--heading-font);
+  }
+  
+  .logo {
+    width: 32px;
+    height: 32px;
+    color: var(--accent);
+    flex: none;
+  }
+  
+  .sidebar .line {
+    margin: 0 16px;
+  }
+  
+  .sidebar-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 16px 14px;
+  }
+  
+  /* New chat = solid, rounded pill (the main action) */
+  .new-chat {
+    width: 100%;
+    padding: 11px 14px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: transform 0.15s, box-shadow 0.2s;
+  }
+  
+  .new-chat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  }
+  
+  /* Search = just an underline, no box */
+  .search-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+    padding: 6px 4px;
+    border-bottom: 1px solid var(--line-color);
+    color: var(--dim);
+    transition: border-color 0.2s, color 0.2s;
+  }
+  
+  .search-wrap:focus-within {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  
+  .search-wrap input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: none;
+    color: var(--text);
+    padding: 4px 0;
+  }
+  
+  .search-wrap input::placeholder {
+    color: var(--dim);
+  }
+  
+  /* small heading above the chat list */
+  .list-label {
+    margin: 22px 4px 8px;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  
+  .chat-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .list-empty {
+    color: var(--dim);
+    font-size: 0.9rem;
+    padding: 8px 4px;
+  }
+  
+  /* each chat in the list: plain text, the open one gets a coloured bar on the left */
+  .chat-item {
+    display: flex;
+    align-items: center;
+    border-left: 3px solid transparent;
+    border-radius: 2px 10px 10px 2px;
+    padding-right: 4px;
+  }
+  
+  .chat-item:hover {
+    background: var(--panel);
+  }
+  
+  .chat-item.active {
+    background: var(--panel);
+    border-left-color: var(--accent);
+  }
+  
+  .chat-name {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+    background: none;
+    border: 0;
+    padding: 9px 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--dim);
+  }
+  
+  .chat-item.active .chat-name,
+  .chat-name:hover {
+    color: var(--text);
+  }
+  
+  /* the pencil and x buttons only show when hovering */
+  .mini-btn {
+    background: none;
+    border: 0;
+    color: var(--dim);
+    padding: 5px 6px;
+    line-height: 1;
+    border-radius: 6px;
+    opacity: 0;
+  }
+  
+  .chat-item:hover .mini-btn,
+  .mini-btn:focus-visible {
+    opacity: 1;
+  }
+  
+  .mini-btn:hover {
+    color: var(--accent);
+  }
+  
+  /* text box used for renaming a chat */
+  .rename-box {
+    flex: 1;
+    min-width: 0;
+    margin: 3px 4px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    background: var(--bg);
+    outline: 0;
+  }
+  
+  .sidebar-foot {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-top: 1px solid var(--line-color);
+    padding-top: 10px;
+    margin-top: 10px;
+  }
+  
+  .tool-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: none;
+    border: 0;
+    padding: 8px 10px;
+    border-radius: 8px;
+    color: var(--dim);
+    font-size: 0.92rem;
+  }
+  
+  .tool-btn:hover {
+    color: var(--text);
+    background: var(--panel);
+  }
+  
+  /* the hamburger button only appears on phones */
+  .menu-btn {
+    display: none;
+  }
+  
+  
+  /* ---------- main area ---------- */
+  .main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+  }
+  
+  .topbar {
+    height: var(--header-height);
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 22px 0 28px;
+  }
+  
+  .topbar h1 {
+    flex: 1;
+    font: 1.15rem var(--heading-font);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .messages {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+  
+  .messages-inner {
+    max-width: 740px;
+    margin: 0 auto;
+    padding: 18px 24px 30px;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  
+  /* ---------- welcome screen ---------- */
+  .welcome {
+    margin: auto;
+    text-align: center;
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    padding: 30px 0;
+  }
+  
+  .welcome[hidden] {
+    display: none;
+  }
+  
+  .welcome-owl {
+    width: 120px;
+    height: 120px;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+  
+  .welcome h2 {
+    font: 400 clamp(2.2rem, 6vw, 3.2rem) / 1.1 var(--heading-font);
+  }
+  
+  .welcome p {
+    color: var(--dim);
+    font-size: 1.1rem;
+  }
+  
+  
+  /* ---------- chat messages ---------- */
+  .thread {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+  }
+  
+  .msg {
+    display: flex;
+    gap: 14px;
+  }
+  
+  .msg.user {
+    justify-content: flex-end;
+  }
+  
+  .msg.user .body {
+    background: var(--mine);
+    padding: 10px 16px;
+    border-radius: 14px 14px 3px 14px;
+    max-width: 82%;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  
+  /* small owl next to the bot's replies */
+  .avatar {
+    flex: none;
+    margin-top: 2px;
+    color: var(--accent);
+  }
+  
+  .avatar svg {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .msg.bot .content {
+    min-width: 0;
+    flex: 1;
+  }
+  
+  /* styling for the markdown inside a reply */
+  .body > :first-child { margin-top: 0; }
+  .body > :last-child { margin-bottom: 0; }
+  
+  .body p, .body ul, .body ol, .body pre, .body table, .body blockquote {
+    margin: 0 0 0.9em;
+  }
+  
+  .body ul, .body ol {
+    padding-left: 1.4em;
+  }
+  
+  .body h1, .body h2, .body h3 {
+    font: 1.15em var(--heading-font);
+    margin: 1.2em 0 0.4em;
+  }
+  
+  .body a {
+    color: var(--accent);
+  }
+  
+  .body blockquote {
+    border-left: 2px solid var(--accent);
+    padding-left: 14px;
+    color: var(--dim);
+  }
+  
+  .body code {
+    font: 0.88em ui-monospace, Menlo, Consolas, monospace;
+    background: var(--panel);
+    border: 1px solid var(--line-color);
+    padding: 1px 6px;
+    border-radius: 5px;
+  }
+  
+  .body pre {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--line-color);
+    border-radius: 10px;
+    padding: 14px;
+    overflow-x: auto;
+  }
+  
+  .body pre code {
+    background: none;
+    border: 0;
+    padding: 0;
+  }
+  
+  .body table {
+    border-collapse: collapse;
+    display: block;
+    overflow-x: auto;
+  }
+  
+  .body th, .body td {
+    border: 1px solid var(--line-color);
+    padding: 6px 12px;
+  }
+  
+  /* "Copy" button inside code blocks */
+  .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--bg);
+    border: 1px solid var(--line-color);
+    border-radius: 6px;
+    padding: 2px 9px;
+    font-size: 0.75rem;
+    color: var(--dim);
+  }
+  
+  /* "Copy reply" button under each reply */
+  .reply-actions {
+    margin-top: 8px;
+  }
+  
+  .reply-actions button {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.78rem;
+    color: var(--dim);
+  }
+  
+  .copy-btn:hover,
+  .reply-actions button:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  
+  /* "Thinking..." with the flipping owl */
+  .thinking {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--dim);
+    padding-top: 3px;
+  }
+  
+  .thinking svg {
+    width: 22px;
+    height: 22px;
+    animation: flip 1.6s ease-in-out infinite;
+  }
+  
+  @keyframes flip {
+    50% { transform: rotateY(180deg); }
+  }
+  
+  .error-text {
+    color: var(--error);
+  }
+  
+  .retry-btn {
+    margin-top: 8px;
+    background: none;
+    border: 1px solid var(--line-color);
+    border-radius: 8px;
+    padding: 5px 14px;
+  }
+  
+  
+  /* ---------- text box at the bottom ---------- */
+  .composer {
+    flex: none;
+    width: 100%;
+    max-width: 788px;
+    margin: 0 auto;
+    padding: 4px 24px 14px;
+  }
+  
+  .input-box {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 6px 6px 6px 18px;
+    background: var(--panel);
+    border: 1px solid var(--line-color);
+    border-radius: 14px;
+    transition: border-color 0.2s;
+  }
+  
+  .input-box:focus-within {
+    border-color: var(--accent);
+  }
+  
+  .input-box textarea {
+    flex: 1;
+    resize: none;
+    background: none;
+    border: 0;
+    outline: 0;
+    padding: 9px 0;
+    max-height: 160px;
+    line-height: 1.5;
+  }
+  
+  .input-box textarea::placeholder {
+    color: var(--dim);
+  }
+  
+  .hint {
+    text-align: center;
+    color: var(--dim);
+    font-size: 0.78rem;
+    margin-top: 7px;
+  }
+  
+  .credit {
+    margin-top: 2px;
+  }
+  
+  .send-btn {
+    flex: none;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 10px;
+    background: var(--accent);
+    color: var(--on-accent);
+    transition: transform 0.15s, opacity 0.2s;
+  }
+  
+  .send-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+  
+  /* while waiting for a reply the button fades and the arrow flips */
+  .send-btn:disabled {
+    opacity: 0.45;
+    cursor: progress;
+  }
+  
+  .send-btn:disabled svg {
+    animation: flip 1.2s ease-in-out infinite;
+  }
+  
+  
+  /* ---------- settings popup ---------- */
+  dialog {
+    margin: auto;
+    width: min(440px, 92vw);
+    padding: 0;
+    border: 1px solid var(--line-color);
+    border-radius: 14px;
+    background: var(--bg);
+    color: var(--text);
+  }
+  
+  dialog::backdrop {
+    background: rgba(0, 0, 0, 0.55);
+  }
+  
+  .settings {
+    display: grid;
+    gap: 16px;
+    padding: 22px;
+  }
+  
+  .settings h3 {
+    font: 1.4rem var(--heading-font);
+  }
+  
+  .field {
+    display: grid;
+    gap: 6px;
+  }
+  
+  .field label {
+    font-size: 0.85rem;
+    color: var(--dim);
+  }
+  
+  .choice {
+    display: flex;
+    border: 1px solid var(--line-color);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  .choice button {
+    flex: 1;
+    padding: 8px;
+    background: none;
+    border: 0;
+    border-right: 1px solid var(--line-color);
+  }
+  
+  .choice button:last-child {
+    border-right: 0;
+  }
+  
+  .choice button.on {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+  
+  .field textarea {
+    resize: vertical;
+    padding: 9px 12px;
+    border: 1px solid var(--line-color);
+    border-radius: 10px;
+    background: var(--panel);
+  }
+  
+  .field textarea:focus {
+    outline: 0;
+    border-color: var(--accent);
+  }
+  
+  input[type="range"] {
+    accent-color: var(--accent);
+  }
+  
+  .buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  
+  .danger-btn {
+    background: none;
+    border: 1px solid var(--line-color);
+    border-radius: 10px;
+    padding: 8px 14px;
+    color: var(--error);
+  }
+  
+  .done-btn {
+    background: var(--accent);
+    color: var(--on-accent);
+    border: 0;
+    border-radius: 10px;
+    padding: 8px 22px;
+    font-weight: 600;
+  }
+  
+  .scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 9;
+    background: rgba(0, 0, 0, 0.45);
+  }
+  
+  
+  /* ---------- close / open the sidebar (desktop) ---------- */
+  .close-btn {
+    margin-left: auto;
+    font-size: 1rem;
+  }
+  
+  .app {
+    transition: grid-template-columns 0.25s;
+  }
+  
+  @media (min-width: 821px) {
+    .app.collapsed {
+      grid-template-columns: 0 1fr;
+    }
+  
+    .app.collapsed .sidebar {
+      visibility: hidden;
+      border-right: 0;
+    }
+  
+    .app.collapsed .menu-btn {
+      display: flex;
+    }
+  }
+  
+  
+  /* ---------- phones: sidebar slides in from the left ---------- */
+  @media (max-width: 820px) {
+    .app {
+      grid-template-columns: 1fr;
+    }
+  
+    .sidebar {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 290px;
+      z-index: 10;
+      transform: translateX(-100%);
+      transition: transform 0.25s;
+    }
+  
+    .sidebar.open {
+      transform: none;
+    }
+  
+    .menu-btn {
+      display: flex;
+    }
+  
+    .topbar {
+      padding: 0 14px;
+    }
+  
+    .top-line {
+      margin: 0 14px;
+    }
+  }
+  
+  /* people who turned off animations in their system get none */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01s !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+    }
+  }
