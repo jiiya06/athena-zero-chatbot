@@ -168,6 +168,6 @@ def delete_history(session_id: str):
     return {"ok": True}
 
 
-# serve the website (index.html, style.css, script.js) from the static folder
+# serve the website (index.html, style.css, script.js) from the UI-interface folder
 # NOTE: this must stay at the bottom, after all the routes above
-app.mount("/", StaticFiles(directory="static", html=True))
+app.mount("/", StaticFiles(directory="UI-interface", html=True))
